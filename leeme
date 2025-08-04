@@ -1,0 +1,2 @@
+rails g model User name:string email:string etrade_request_token:string etrade_request_token_secret:string etrade_access_token:string etrade_access_secret:string
+
