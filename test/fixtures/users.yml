@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  email: MyString
+  etrade_request_token: MyString
+  etrade_request_token_secret: MyString
+  etrade_access_token: MyString
+  etrade_access_secret: MyString
+
+two:
+  name: MyString
+  email: MyString
+  etrade_request_token: MyString
+  etrade_request_token_secret: MyString
+  etrade_access_token: MyString
+  etrade_access_secret: MyString
