@@ -1,55 +1,119 @@
 # app/controllers/api/etrade_controller.rb
 class Api::EtradeController < ApplicationController
-  # Supongamos que tienes un usuario autenticado y un modelo User
-  before_action :authenticate_user!
+  # No es necesario autenticar a un usuario existente, ya que estamos creando uno nuevo
+  # before_action :authenticate_user!
 
   def start_auth
     etrade_service = EtradeOauthService.new
-    request_token = etrade_service.get_request_token
 
-    # Guarda el request_token y su secret en la sesión del usuario o en la base de datos
-    # Esto es crucial para el siguiente paso
-    session[:etrade_request_token] = request_token.token
-    session[:etrade_request_token_secret] = request_token.secret
+    begin
+      request_token = etrade_service.get_request_token
 
-    authorization_url = etrade_service.authorization_url(request_token)
+      puts
+      puts '*'*40
+      puts '*'*40
+      puts "--> #{__method__} <--"
+      puts
+      puts "request_token: #{request_token}"
+      puts
+      puts '*'*40
+      puts '*'*40
+      puts
+      
 
-    render json: { authorization_url: authorization_url }, status: :ok
+      # Creamos un nuevo usuario y guardamos los tokens
+      # En un escenario real, también tendrías otros datos del usuario aquí
+      # como email o nombre, pero para este ejemplo, solo usaremos los tokens.
+      user = User.new(
+        etrade_request_token: request_token.token,
+        etrade_request_token_secret: request_token.secret
+      )
+
+      if user.save
+        # Una vez guardado, podemos usar su ID para reconstruir el flujo en el callback
+        authorization_url = etrade_service.authorization_url(request_token)
+        
+        # Guardamos la URL y el ID del usuario en la respuesta
+        render json: { 
+          authorization_url: authorization_url,
+          user_id: user.id
+        }, status: :ok
+      else
+        render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+      end
+
+    rescue StandardError => e
+      render json: { error: "Ocurrió un error: #{e.message}" }, status: :internal_server_error
+    end
   end
 
   def callback
-    # Esta acción se activará cuando el usuario sea redirigido desde E*TRADE
-    # con el PIN de verificación
-
+    # Recuperamos los datos del usuario del callback
+    # user_id = params[:user_id] 
     oauth_verifier = params[:oauth_verifier]
 
-    if oauth_verifier.blank?
-      render json: { error: 'No se proporcionó un PIN de verificación.' }, status: :bad_request
+    puts
+    puts '*'*40
+    puts '*'*40
+    puts "--> #{__method__} <--"
+    puts
+    puts "oauth_verifier: #{oauth_verifier}"
+    puts
+    puts '*'*40
+    puts '*'*40
+    puts
+    
+
+    # # Revisa si los parámetros están presentes
+    # if user_id.blank? || oauth_verifier.blank?
+    #   render json: { error: 'Faltan parámetros en el callback.' }, status: :bad_request
+    #   return
+    # end
+
+    # Buscamos al usuario por su ID
+    # user = User.find_by(id: user_id)
+    user = User.last
+
+    if user.nil?
+      render json: { error: 'Usuario no encontrado.' }, status: :not_found
       return
     end
 
     etrade_service = EtradeOauthService.new
     
-    # Reconstruye el Request Token a partir de los datos guardados en la sesión
+    # Reconstruye el Request Token a partir de los datos guardados en la base de datos
     request_token = OAuth::RequestToken.new(
       etrade_service.instance_variable_get(:@consumer),
-      session[:etrade_request_token],
-      session[:etrade_request_token_secret]
+      user.etrade_request_token,
+      user.etrade_request_token_secret
     )
 
     access_token = etrade_service.get_access_token(request_token, oauth_verifier)
 
-    # Guarda el Access Token y el Access Secret del usuario en la base de datos
-    current_user.update(
+    puts
+    puts '*'*40
+    puts '*'*40
+    puts "--> #{__method__} <--"
+    puts
+    puts "access_token: #{access_token}"
+    puts
+    puts '*'*40
+    puts '*'*40
+    puts
+    
+
+    # Actualizamos los tokens permanentes del usuario y limpiamos los temporales
+    if user.update(
       etrade_access_token: access_token.token,
-      etrade_access_secret: access_token.secret
+      etrade_access_secret: access_token.secret,
+      etrade_request_token: nil,
+      etrade_request_token_secret: nil
     )
+      render json: { message: 'Autenticación con E*TRADE exitosa.' }, status: :ok
+    else
+      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+    end
 
-    # Limpia la sesión
-    session.delete(:etrade_request_token)
-    session.delete(:etrade_request_token_secret)
-
-    render json: { message: 'Autenticación con E*TRADE exitosa.' }, status: :ok
   rescue StandardError => e
     render json: { error: e.message }, status: :internal_server_error
   end

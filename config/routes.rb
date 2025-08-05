@@ -5,4 +5,6 @@ Rails.application.routes.draw do
     get '/etrade/start_auth', to: 'etrade#start_auth'
     get '/etrade/callback', to: 'etrade#callback'
   end
+    root "home#initial"
+
 end

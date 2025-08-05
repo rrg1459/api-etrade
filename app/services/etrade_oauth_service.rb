@@ -3,8 +3,8 @@ require 'oauth'
 
 class EtradeOauthService
   # Configuración de tus credenciales de la sandbox
-  CONSUMER_KEY    = ENV['7057a90cb469e10cd243e8437a34dcb6']
-  CONSUMER_SECRET = ENV['51101a3c9e9512ad774f6e1d0267e72e330f89006553c1ef06d07daac6b9ae8a']
+  CONSUMER_KEY    = ENV['ETRADE_CONSUMER_KEY']
+  CONSUMER_SECRET = ENV['ETRADE_CONSUMER_SECRET']
 
   # URLs de la API de E*TRADE para la sandbox
   API_BASE_URL    = 'https://apisb.etrade.com'
@@ -30,6 +30,7 @@ class EtradeOauthService
   def get_request_token
     begin
       @consumer.get_request_token
+      # @consumer.get_request_token(oauth_callback: 'http://localhost:3000/api/etrade/callback')
     rescue OAuth::Unauthorized => e
       raise "Error de autenticación con E*TRADE: #{e.message}"
     end
