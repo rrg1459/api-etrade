@@ -9,18 +9,6 @@ class Api::EtradeController < ApplicationController
     begin
       request_token = etrade_service.get_request_token
 
-      puts
-      puts '*'*40
-      puts '*'*40
-      puts "--> #{__method__} <--"
-      puts
-      puts "request_token: #{request_token}"
-      puts
-      puts '*'*40
-      puts '*'*40
-      puts
-      
-
       # Creamos un nuevo usuario y guardamos los tokens
       # En un escenario real, también tendrías otros datos del usuario aquí
       # como email o nombre, pero para este ejemplo, solo usaremos los tokens.
@@ -32,7 +20,7 @@ class Api::EtradeController < ApplicationController
       if user.save
         # Una vez guardado, podemos usar su ID para reconstruir el flujo en el callback
         authorization_url = etrade_service.authorization_url(request_token)
-        
+
         # Guardamos la URL y el ID del usuario en la respuesta
         render json: { 
           authorization_url: authorization_url,
@@ -50,28 +38,11 @@ class Api::EtradeController < ApplicationController
   def callback
     # Recuperamos los datos del usuario del callback
     # user_id = params[:user_id] 
-    oauth_verifier = params[:oauth_verifier]
+    # oauth_verifier = params[:oauth_verifier]
+    # oauth_verifier = '985178'
+    # oauth_verifier = '618783'
+    oauth_verifier = '674512'
 
-    puts
-    puts '*'*40
-    puts '*'*40
-    puts "--> #{__method__} <--"
-    puts
-    puts "oauth_verifier: #{oauth_verifier}"
-    puts
-    puts '*'*40
-    puts '*'*40
-    puts
-    
-
-    # # Revisa si los parámetros están presentes
-    # if user_id.blank? || oauth_verifier.blank?
-    #   render json: { error: 'Faltan parámetros en el callback.' }, status: :bad_request
-    #   return
-    # end
-
-    # Buscamos al usuario por su ID
-    # user = User.find_by(id: user_id)
     user = User.last
 
     if user.nil?
@@ -80,7 +51,7 @@ class Api::EtradeController < ApplicationController
     end
 
     etrade_service = EtradeOauthService.new
-    
+
     # Reconstruye el Request Token a partir de los datos guardados en la base de datos
     request_token = OAuth::RequestToken.new(
       etrade_service.instance_variable_get(:@consumer),
@@ -88,19 +59,9 @@ class Api::EtradeController < ApplicationController
       user.etrade_request_token_secret
     )
 
-    access_token = etrade_service.get_access_token(request_token, oauth_verifier)
+    request_token.params['oauth_callback'] = EtradeOauthService::CALLBACK_URL
 
-    puts
-    puts '*'*40
-    puts '*'*40
-    puts "--> #{__method__} <--"
-    puts
-    puts "access_token: #{access_token}"
-    puts
-    puts '*'*40
-    puts '*'*40
-    puts
-    
+    access_token = etrade_service.get_access_token(request_token, oauth_verifier)
 
     # Actualizamos los tokens permanentes del usuario y limpiamos los temporales
     if user.update(
