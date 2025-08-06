@@ -32,7 +32,7 @@ gem "bootsnap", require: false
 group :development do
   gem "dotenv-rails", "~> 3.1"
   gem "byebug", "~> 12.0"
-  gem "annotaterb", "~> 4.17"
+  gem "annotaterb", "~> 4.18"
 end
 
 group :development, :test do
