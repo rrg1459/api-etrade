@@ -12,6 +12,9 @@ class EtradeOauthService
   ACCESS_TOKEN_PATH  = '/oauth/access_token'
   AUTHORIZE_URL      = 'https://us.etrade.com/e/t/etws/authorize'
 
+  # Añadir la URL de callback como una constante
+  CALLBACK_URL = 'http://localhost:3000/api/etrade/callback'
+
   def initialize
     # El objeto OAuth::Consumer se inicializa una vez con las credenciales
     @consumer = OAuth::Consumer.new(
@@ -30,7 +33,8 @@ class EtradeOauthService
   def get_request_token
     begin
       @consumer.get_request_token
-      # @consumer.get_request_token(oauth_callback: 'http://localhost:3000/api/etrade/callback')
+      # @consumer.get_request_token(oauth_callback: CALLBACK_URL)
+    # @consumer.get_request_token(oauth_callback: 'http://localhost:3000/api/etrade/callback')
     rescue OAuth::Unauthorized => e
       raise "Error de autenticación con E*TRADE: #{e.message}"
     end
