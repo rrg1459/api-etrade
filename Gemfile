@@ -50,3 +50,6 @@ end
 
 gem "oauth", "~> 1.1"
 
+
+gem "schwab_rb", "~> 0.3.7"
+
