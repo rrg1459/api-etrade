@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_08_04_231556) do
+ActiveRecord::Schema[7.2].define(version: 2025_08_12_154127) do
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "email"
@@ -20,6 +20,12 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_04_231556) do
     t.string "etrade_access_secret"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "schwab_access_token"
+    t.string "schwab_refresh_token"
+    t.datetime "schwab_access_token_expires_at"
+    t.datetime "schwab_refresh_token_expires_at"
+    t.integer "schwab_account_number"
+    t.string "schwab_account_number_hash"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["etrade_access_token"], name: "index_users_on_etrade_access_token"
     t.index ["etrade_request_token"], name: "index_users_on_etrade_request_token"
