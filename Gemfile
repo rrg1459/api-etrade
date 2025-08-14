@@ -46,10 +46,4 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 end
 
-
-
 gem "oauth", "~> 1.1"
-
-
-gem "schwab_rb", "~> 0.3.7"
-
