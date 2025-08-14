@@ -43,37 +43,38 @@ class Api::EtradeController < ApplicationController
     # oauth_verifier = '618783'
     oauth_verifier = '674512'
 
-    user = User.last
+    byebug
+    # user = User.last
 
-    if user.nil?
-      render json: { error: 'Usuario no encontrado.' }, status: :not_found
-      return
-    end
+    # if user.nil?
+    #   render json: { error: 'Usuario no encontrado.' }, status: :not_found
+    #   return
+    # end
 
-    etrade_service = EtradeOauthService.new
+    # etrade_service = EtradeOauthService.new
 
-    # Reconstruye el Request Token a partir de los datos guardados en la base de datos
-    request_token = OAuth::RequestToken.new(
-      etrade_service.instance_variable_get(:@consumer),
-      user.etrade_request_token,
-      user.etrade_request_token_secret
-    )
+    # # Reconstruye el Request Token a partir de los datos guardados en la base de datos
+    # request_token = OAuth::RequestToken.new(
+    #   etrade_service.instance_variable_get(:@consumer),
+    #   user.etrade_request_token,
+    #   user.etrade_request_token_secret
+    # )
 
-    request_token.params['oauth_callback'] = EtradeOauthService::CALLBACK_URL
+    # request_token.params['oauth_callback'] = EtradeOauthService::CALLBACK_URL
 
-    access_token = etrade_service.get_access_token(request_token, oauth_verifier)
+    # access_token = etrade_service.get_access_token(request_token, oauth_verifier)
 
-    # Actualizamos los tokens permanentes del usuario y limpiamos los temporales
-    if user.update(
-      etrade_access_token: access_token.token,
-      etrade_access_secret: access_token.secret,
-      etrade_request_token: nil,
-      etrade_request_token_secret: nil
-    )
-      render json: { message: 'Autenticación con E*TRADE exitosa.' }, status: :ok
-    else
-      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
-    end
+    # # Actualizamos los tokens permanentes del usuario y limpiamos los temporales
+    # if user.update(
+    #   etrade_access_token: access_token.token,
+    #   etrade_access_secret: access_token.secret,
+    #   etrade_request_token: nil,
+    #   etrade_request_token_secret: nil
+    # )
+    #   render json: { message: 'Autenticación con E*TRADE exitosa.' }, status: :ok
+    # else
+    #   render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+    # end
 
   rescue StandardError => e
     render json: { error: e.message }, status: :internal_server_error
