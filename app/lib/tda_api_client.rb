@@ -9,8 +9,4 @@ module TdaApiClient
       'Authorization' => "Basic #{auth_string}"
     }
   end
-
-  def self.current_clientx
-    "current_client: #{current_client.schwab_account_number_hash}"
-  end
 end
