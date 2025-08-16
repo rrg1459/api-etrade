@@ -1,5 +1,7 @@
 class Transaction < ApplicationRecord
+  belongs_to :broker
+  belongs_to :strategy
+  belongs_to :symbol
 
-belongs_to :broker
-
+  has_one :user, through: :broker
 end
