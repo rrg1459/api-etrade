@@ -10,25 +10,52 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_08_14_235702) do
+ActiveRecord::Schema[7.2].define(version: 2025_08_15_235702) do
+  create_table "broker_conexion_variables", force: :cascade do |t|
+    t.string "name"
+    t.string "description"
+    t.string "value"
+    t.datetime "expires_at"
+    t.integer "user_id", null: false
+    t.integer "broker_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["broker_id"], name: "index_broker_conexion_variables_on_broker_id"
+    t.index ["user_id"], name: "index_broker_conexion_variables_on_user_id"
+  end
+
   create_table "brokers", force: :cascade do |t|
-    t.string "nombre"
-    t.string "direccion"
-    t.string "contacto"
+    t.string "name"
+    t.string "api_url"
+    t.string "email"
+    t.string "contact"
     t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_brokers_on_user_id"
   end
 
+  create_table "strategies", force: :cascade do |t|
+    t.string "name"
+    t.string "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "symbols", force: :cascade do |t|
+    t.string "name"
+    t.string "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "transactions", force: :cascade do |t|
     t.date "date"
     t.time "hour"
-    t.string "symbol"
     t.string "call_put"
     t.integer "spot_price"
     t.integer "strike_price"
-    t.integer "distancia"
+    t.integer "distance"
     t.integer "qty"
     t.integer "buy_price"
     t.integer "total_buy"
@@ -41,34 +68,29 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_14_235702) do
     t.integer "gain_loss_porcentual"
     t.integer "new_price"
     t.integer "new_price_porcentual"
-    t.string "strategy"
-    t.text "notes"
+    t.string "notes"
     t.integer "broker_id", null: false
+    t.integer "strategy_id", null: false
+    t.integer "symbol_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["broker_id"], name: "index_transactions_on_broker_id"
+    t.index ["strategy_id"], name: "index_transactions_on_strategy_id"
+    t.index ["symbol_id"], name: "index_transactions_on_symbol_id"
   end
 
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "email"
-    t.string "etrade_request_token"
-    t.string "etrade_request_token_secret"
-    t.string "etrade_access_token"
-    t.string "etrade_access_secret"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "schwab_access_token"
-    t.string "schwab_refresh_token"
-    t.datetime "schwab_access_token_expires_at"
-    t.datetime "schwab_refresh_token_expires_at"
-    t.integer "schwab_account_number"
-    t.string "schwab_account_number_hash"
     t.index ["email"], name: "index_users_on_email", unique: true
-    t.index ["etrade_access_token"], name: "index_users_on_etrade_access_token"
-    t.index ["etrade_request_token"], name: "index_users_on_etrade_request_token"
   end
 
+  add_foreign_key "broker_conexion_variables", "brokers"
+  add_foreign_key "broker_conexion_variables", "users"
   add_foreign_key "brokers", "users"
   add_foreign_key "transactions", "brokers"
+  add_foreign_key "transactions", "strategies"
+  add_foreign_key "transactions", "symbols"
 end
