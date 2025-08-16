@@ -1,5 +1,3 @@
-# app/models/user.rb
-
 class User < ApplicationRecord
   # ... otras validaciones y relaciones
 
@@ -12,7 +10,7 @@ class User < ApplicationRecord
   # end
 
   has_many :brokers
-  has_many :broker_conexion_variables
 
   has_many :transactions, through: :brokers
+  has_many :broker_conexion_variables, through: :brokers
 end
