@@ -4,7 +4,7 @@ class Api::SchwabController < ApplicationController
   before_action :ensure_valid_schwab_token, except: [:start_auth, :callback]
 
   def start_auth
-    if current_user.schwab_token_is_valid?
+    if current_user.schwab_access_token_is_valid?
       render json: { message: "El usuario tiene un access token válido." }, status: :ok
     else
       auth_url = SchwabApiService.build_auth_url
@@ -57,7 +57,7 @@ class Api::SchwabController < ApplicationController
 
   def ensure_valid_schwab_token
     # Si el token de acceso es válido, no hacemos nada más.
-    return if current_user.schwab_token_is_valid?
+    return if current_user.schwab_access_token_is_valid?
 
     # Si el token de acceso está vencido, intentamos refrescarlo.
     if current_user.schwab_refresh_token_is_valid?
@@ -83,12 +83,13 @@ class Api::SchwabController < ApplicationController
 
   def update_broker_conexions_tokens(token_data)
     time_utc = Time.now.utc
-    access_token = BrokerConexion.find_by(key: 'access_token', broker_id: 2)
+    access_token = BrokerConexion.find_by_key_and_broker('access_token', 'schwab')
+    refresh_token = BrokerConexion.find_by_key_and_broker('refresh_token', 'schwab')
+
     access_token.update(
       value: token_data['access_token'],
       expires_at: time_utc + token_data['expires_in'].to_i.seconds,
     )
-    refresh_token = BrokerConexion.find_by(key: 'refresh_token', broker_id: 2)
     refresh_token.update(
       value: token_data['refresh_token'] || current_user.schwab_refresh_token,
       expires_at: token_data['refresh_token'] ? time_utc + 7.days : current_user.schwab_refresh_token_expires_at
@@ -96,9 +97,9 @@ class Api::SchwabController < ApplicationController
   end
 
   def update_broker_conexions_account(account)
-    account_number = BrokerConexion.find_by(key: 'account_numer', broker_id: 2)
-    account_number_hash = BrokerConexion.find_by(key: 'account_numer', broker_id: 2)
-        # current_user.update(schwab_account_number_hash: account['accountNumber'], schwab_account_number_hash: account['hashValue'])
+    account_number = BrokerConexion.find_by_key_and_broker('account_number', 'schwab')
+    account_number_hash = BrokerConexion.find_by_key_and_broker('account_number_hash', 'schwab')
+
     account_number.update(value: account['accountNumber']) if account_number
     account_number_hash.update(value: account['hashValue']) if account_number_hash
   end

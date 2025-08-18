@@ -27,6 +27,10 @@ class BrokerConexion < ApplicationRecord
   belongs_to :broker
   belongs_to :user
 
+  scope :find_by_key_and_broker, ->(key, broker_name) {
+    joins(:broker).find_by(key: key, brokers: { name: broker_name })
+  }
+
   def expired?
     expires_at.present? && expires_at <= Time.now.utc
   end
