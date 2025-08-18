@@ -11,45 +11,52 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.2].define(version: 2025_08_15_235702) do
-  create_table "broker_conexion_variables", force: :cascade do |t|
-    t.string "name"
-    t.string "description"
-    t.string "value"
-    t.datetime "expires_at"
-    t.integer "user_id", null: false
+  create_table "broker_conexions", force: :cascade do |t|
     t.integer "broker_id", null: false
+    t.integer "user_id", null: false
+    t.string "key"
+    t.string "value"
+    t.string "description"
+    t.datetime "expires_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["broker_id"], name: "index_broker_conexion_variables_on_broker_id"
-    t.index ["user_id"], name: "index_broker_conexion_variables_on_user_id"
+    t.index ["broker_id"], name: "index_broker_conexions_on_broker_id"
+    t.index ["user_id"], name: "index_broker_conexions_on_user_id"
   end
 
   create_table "brokers", force: :cascade do |t|
     t.string "name"
-    t.string "api_url"
+    t.string "api_base_url"
     t.string "email"
     t.string "contact"
-    t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_brokers_on_user_id"
   end
 
   create_table "strategies", force: :cascade do |t|
     t.string "name"
     t.string "description"
+    t.string "time_frame"
+    t.string "analysis_type"
+    t.string "ideal_for"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "symbols", force: :cascade do |t|
+  create_table "tickers", force: :cascade do |t|
     t.string "name"
-    t.string "description"
+    t.string "asset"
+    t.string "asset_type"
+    t.string "market"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "transactions", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "broker_id", null: false
+    t.integer "strategy_id", null: false
+    t.integer "ticker_id", null: false
     t.date "date"
     t.time "hour"
     t.string "call_put"
@@ -69,14 +76,12 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_15_235702) do
     t.integer "new_price"
     t.integer "new_price_porcentual"
     t.string "notes"
-    t.integer "broker_id", null: false
-    t.integer "strategy_id", null: false
-    t.integer "symbol_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["broker_id"], name: "index_transactions_on_broker_id"
     t.index ["strategy_id"], name: "index_transactions_on_strategy_id"
-    t.index ["symbol_id"], name: "index_transactions_on_symbol_id"
+    t.index ["ticker_id"], name: "index_transactions_on_ticker_id"
+    t.index ["user_id"], name: "index_transactions_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -87,10 +92,10 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_15_235702) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
-  add_foreign_key "broker_conexion_variables", "brokers"
-  add_foreign_key "broker_conexion_variables", "users"
-  add_foreign_key "brokers", "users"
+  add_foreign_key "broker_conexions", "brokers"
+  add_foreign_key "broker_conexions", "users"
   add_foreign_key "transactions", "brokers"
   add_foreign_key "transactions", "strategies"
-  add_foreign_key "transactions", "symbols"
+  add_foreign_key "transactions", "tickers"
+  add_foreign_key "transactions", "users"
 end

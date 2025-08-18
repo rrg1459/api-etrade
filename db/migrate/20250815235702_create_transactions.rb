@@ -1,6 +1,10 @@
 class CreateTransactions < ActiveRecord::Migration[7.2]
   def change
     create_table :transactions do |t|
+      t.references :user, null: false, foreign_key: true
+      t.references :broker, null: false, foreign_key: true
+      t.references :strategy, null: false, foreign_key: true
+      t.references :ticker, null: false, foreign_key: true
       t.date :date
       t.time :hour
       t.string :call_put
@@ -20,9 +24,6 @@ class CreateTransactions < ActiveRecord::Migration[7.2]
       t.integer :new_price
       t.integer :new_price_porcentual
       t.string :notes
-      t.references :broker, null: false, foreign_key: true
-      t.references :strategy, null: false, foreign_key: true
-      t.references :symbol, null: false, foreign_key: true
 
       t.timestamps
     end
