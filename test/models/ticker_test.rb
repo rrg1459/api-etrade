@@ -1,20 +1,18 @@
 # == Schema Information
 #
-# Table name: users
+# Table name: tickers
 #
 #  id         :integer          not null, primary key
-#  email      :string
+#  asset      :string
+#  asset_type :string
+#  market     :string
 #  name       :string
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
-# Indexes
-#
-#  index_users_on_email  (email) UNIQUE
-#
 require "test_helper"
 
-class UserTest < ActiveSupport::TestCase
+class TickerTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end
