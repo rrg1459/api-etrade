@@ -84,16 +84,18 @@ class Api::SchwabController < ApplicationController
   def update_broker_conexions_tokens(token_data)
     time_utc = Time.now.utc
     access_token = BrokerConexion.find_by_key_and_broker('access_token', 'schwab')
-    refresh_token = BrokerConexion.find_by_key_and_broker('refresh_token', 'schwab')
-
     access_token.update(
       value: token_data['access_token'],
       expires_at: time_utc + token_data['expires_in'].to_i.seconds,
-    )
-    refresh_token.update(
-      value: token_data['refresh_token'] || current_user.schwab_refresh_token,
-      expires_at: token_data['refresh_token'] ? time_utc + 7.days : current_user.schwab_refresh_token_expires_at
-    )
+      ) if access_token
+
+      if token_data['refresh_token']
+      refresh_token = BrokerConexion.find_by_key_and_broker('refresh_token', 'schwab')
+      refresh_token.update(
+        value: token_data['refresh_token'],
+        expires_at: time_utc + 7.days
+      ) if refresh_token
+    end
   end
 
   def update_broker_conexions_account(account)
