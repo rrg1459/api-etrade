@@ -16,7 +16,7 @@ class Api::SchwabController < ApplicationController
     response = SchwabApiService.exchange_code_for_token(params[:code])
 
     if response[:status] == :success
-      update_user_tokens(response[:body])
+      update_broker_conexions_tokens(response[:body])
       render json: { status: 'success', message: 'Token recibido y guardado.' }
     else
       render_error(response)
@@ -30,7 +30,7 @@ class Api::SchwabController < ApplicationController
       response = SchwabApiService.get_account_numbers(current_user.schwab_access_token)
       if response[:status] == :success
         account = response[:body].first
-        current_user.update(schwab_account_number: account['accountNumber'], schwab_account_number_hash: account['hashValue'])
+        update_broker_conexions_account(account)
         render json: { accounts: account }, status: :ok
       else
         render_error(response)
@@ -64,7 +64,7 @@ class Api::SchwabController < ApplicationController
       response = SchwabApiService.refresh_access_token(current_user.schwab_refresh_token)
 
       if response[:status] == :success
-        update_user_tokens(response[:body])
+        update_broker_conexions_tokens(response[:body])
         # El token se ha refrescado con éxito, la acción del controlador puede continuar.
       else
         # Hubo un error al refrescar el token (ej. token_refresco inválido).
@@ -81,24 +81,26 @@ class Api::SchwabController < ApplicationController
     end
   end
 
-  def refresh_token_action
-    response = SchwabApiService.refresh_access_token(current_user.schwab_refresh_token)
-    if response[:status] == :success
-      update_user_tokens(response[:body])
-    else
-      render_error(response)
-    end
+  def update_broker_conexions_tokens(token_data)
+    time_utc = Time.now.utc
+    access_token = BrokerConexion.find_by(key: 'access_token', broker_id: 2)
+    access_token.update(
+      value: token_data['access_token'],
+      expires_at: time_utc + token_data['expires_in'].to_i.seconds,
+    )
+    refresh_token = BrokerConexion.find_by(key: 'refresh_token', broker_id: 2)
+    refresh_token.update(
+      value: token_data['refresh_token'] || current_user.schwab_refresh_token,
+      expires_at: token_data['refresh_token'] ? time_utc + 7.days : current_user.schwab_refresh_token_expires_at
+    )
   end
 
-  def update_user_tokens(token_data)
-    time_utc = Time.now.utc
-    current_user.update(
-      schwab_access_token: token_data['access_token'],
-      schwab_refresh_token: token_data['refresh_token'] || current_user.schwab_refresh_token,
-      schwab_access_token_expires_at: time_utc + token_data['expires_in'].to_i.seconds,
-      # El refresh token solo se obtiene en la autenticación inicial, no en el refresh
-      schwab_refresh_token_expires_at: token_data['refresh_token'] ? time_utc + 7.days : current_user.schwab_refresh_token_expires_at
-    )
+  def update_broker_conexions_account(account)
+    account_number = BrokerConexion.find_by(key: 'account_numer', broker_id: 2)
+    account_number_hash = BrokerConexion.find_by(key: 'account_numer', broker_id: 2)
+        # current_user.update(schwab_account_number_hash: account['accountNumber'], schwab_account_number_hash: account['hashValue'])
+    account_number.update(value: account['accountNumber']) if account_number
+    account_number_hash.update(value: account['hashValue']) if account_number_hash
   end
 
   def render_error(response, message_override = nil)
