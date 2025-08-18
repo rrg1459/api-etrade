@@ -35,3 +35,5 @@
 /config/certs/
 
 /.byebug_history
+
+/db/seeds/99_broker_conexions.rb
