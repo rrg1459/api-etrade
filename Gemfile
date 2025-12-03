@@ -30,7 +30,7 @@ gem "bootsnap", require: false
 # gem "rack-cors"
 
 group :development do
-  gem "dotenv-rails", "~> 3.1"
+  gem "dotenv-rails", "~> 3.2"
   gem "byebug", "~> 12.0"
   gem "annotaterb", "~> 4.17"
 end
